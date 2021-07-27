@@ -107,7 +107,7 @@ def compare_access_ldap(settings, args, access_entries, ldap_entries):
             if not found:
                 #message = "Unable to find entry in {}: {}".format(settings['right_name'], leftUID)
                 message = "Unable to find entry in {}: {}".format('ldap', entry)
-            print(message)
+                print(message)
 
 
 def process_duplicates(settings):
