@@ -105,9 +105,7 @@ def compare_access_ldap(settings, args, access_entries, ldap_entries):
             except:
                 found = False
             if not found:
-                #message = "Unable to find entry in {}: {}".format(settings['right_name'], leftUID)
-                message = "Unable to find entry in {}: {}".format('ldap', entry)
-                print(message)
+                print("{}: needs deactivated in AtlassianAccess for org: {}".format(entry, org))
 
 
 def process_duplicates(settings):
