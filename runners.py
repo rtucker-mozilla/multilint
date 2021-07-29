@@ -100,8 +100,13 @@ def compare_workday_ldap(settings, args):
 def compare_access_ldap(settings, args, access_entries, ldap_entries):
     for org in access_entries:
         for entry in access_entries[org]:
+            # As of now, we just have a list of exclusions
+            #should_exclude_by_regex = should_exclude_regex(entry, settings)
+            should_exclude_by_file = should_exclude_file(entry, settings['left_name'])
+            if should_exclude_by_file:
+                continue
             try:
-                found = len([u for u in ldap_entries if u['mail'] == entry.encode('utf8')]) == 1
+                found = len([u for u in ldap_entries if u[settings['rightUID']] == entry.encode('utf8')]) == 1
             except:
                 found = False
             if not found:
