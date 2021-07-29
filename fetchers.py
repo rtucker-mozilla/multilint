@@ -32,7 +32,7 @@ def filter_access_lists(org_lists, return_attribute, k, v):
     return ret
 
 
-def access(settings, active_only=False):
+def access(settings, billable_only=False, active_only=False):
     headers = {
         'Accept': 'application/json',
         'Authorization': 'Bearer {}'.format(ACCESS_TOKEN),
@@ -53,6 +53,8 @@ def access(settings, active_only=False):
                 done = True
         if active_only:
             return filter_access_lists(ret, 'email', 'account_status', 'active')
+        elif billable_only:
+            return filter_access_lists(ret, 'email', 'access_billable', True)
         else:
             return ret
 
