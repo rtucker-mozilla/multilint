@@ -106,7 +106,7 @@ def compare_confluence_ldap(settings, args, confluence_users, ldap_users):
     for entry in confluence_users:
         status = entry['status']
         username = entry['username']
-        should_exclude_by_file = should_exclude_file(entry, settings['left_name'])
+        should_exclude_by_file = should_exclude_file(username, settings['left_name'])
         if should_exclude_by_file:
             continue
         domain_found = False
