@@ -92,9 +92,7 @@ def execute_compare(left_entries, right_entries, settings, args):
     for message in messages:
         print(message)
 
-def compare_workday_ldap(settings, args):
-    workday_entries = settings['left_fetcher'](settings)
-    ldap_entries = settings['right_fetcher'](settings)
+def compare_workday_ldap(settings, args, workday_entries, ldap_entries):
     execute_compare(workday_entries, ldap_entries, settings, args)
 
 def compare_access_ldap(settings, args, access_entries, ldap_entries):

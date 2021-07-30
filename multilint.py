@@ -1,7 +1,7 @@
 import argparse
 import settings
 from runners import compare_workday_ldap, process_duplicates, compare_access_ldap
-from fetchers import cis, ldap, access
+from fetchers import cis, ldap, access, workday
 
 
 
@@ -24,9 +24,12 @@ def main():
     if args.workday_ldap:
         if ldap_users is None:
             ldap_users = ldap(settings)
+        if workday_users is None:
+            workday_users = workday(settings)
+
         # Need to refactor this to accept ldap_users and workday_users as
         # arguments
-        #compare_workday_ldap(settings.workday_ldap, args, workday_users, ldap_users)
+        compare_workday_ldap(settings.workday_ldap, args, workday_users, ldap_users)
     
     # Placeholder for which arguments we end up using. --commit is a standardf
     #cis(settings, '')
