@@ -35,7 +35,7 @@ def main():
         if ldap_users is None:
             ldap_users = ldap(settings)
         if confluence_users is None:
-            confluence_users = confluence_users(settings)
+            confluence_users = confluence(settings)
         compare_confluence_ldap(settings.confluence_ldap, args, confluence_users, ldap_users)
     
     #cis(settings, '')
