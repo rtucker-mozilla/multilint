@@ -98,7 +98,7 @@ def compare_workday_ldap(settings, args, workday_entries, ldap_entries):
 
 def user_exists_in_ldap_by_mail(ldap_users, mail):
     try:
-        return [u for u in ldap_users if u[1]['mail'][0].decode() == mail][0]
+        return [u for u in ldap_users if u['mail'].decode() == mail][0]
     except (IndexError, KeyError):
         return False
 
