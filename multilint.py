@@ -1,7 +1,8 @@
 import argparse
 import settings
 from runners import compare_workday_ldap, process_duplicates, compare_access_ldap
-from fetchers import cis, ldap, access, workday
+from runners import compare_confluence_ldap
+from fetchers import cis, confluence, ldap, access, workday
 
 
 
@@ -9,10 +10,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--access-ldap', help='', action='store_true')
     parser.add_argument('--workday-ldap', help='', action='store_true')
+    parser.add_argument('--confluence-ldap', help='', action='store_true')
     args = parser.parse_args()
     workday_users = None
     ldap_users = None
     access_users = None
+    confluence_users = None
 
     if args.access_ldap:
         if ldap_users is None:
@@ -26,14 +29,18 @@ def main():
             ldap_users = ldap(settings)
         if workday_users is None:
             workday_users = workday(settings)
-
-        # Need to refactor this to accept ldap_users and workday_users as
-        # arguments
         compare_workday_ldap(settings.workday_ldap, args, workday_users, ldap_users)
+        
+    if args.confluence_ldap:
+        if ldap_users is None:
+            ldap_users = ldap(settings)
+        if confluence_users is None:
+            confluence_users = confluence_users(settings)
+        compare_confluence_ldap(settings.confluence_ldap, args, confluence_users, ldap_users)
     
-    # Placeholder for which arguments we end up using. --commit is a standardf
     #cis(settings, '')
     #process_duplicates(settings.workday)
+    # Probably not necessary since we've added an overlap to stop dupes
     #process_duplicates(settings.ldap)
 
 if __name__ == '__main__':

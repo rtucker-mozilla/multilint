@@ -1,5 +1,6 @@
 import re
 import os
+from constants import MOZILLA_DOMAINS
 
 def should_exclude_file(uid, name):
     # Taking a uid and name that corresponds to a simple text file
@@ -94,6 +95,27 @@ def execute_compare(left_entries, right_entries, settings, args):
 
 def compare_workday_ldap(settings, args, workday_entries, ldap_entries):
     execute_compare(workday_entries, ldap_entries, settings, args)
+
+def user_exists_in_ldap_by_mail(ldap_users, mail):
+    try:
+        return [u for u in ldap_users if u[1]['mail'][0].decode() == mail][0]
+    except (IndexError, KeyError):
+        return False
+
+def compare_confluence_ldap(settings, args, confluence_users, ldap_users):
+    for entry in confluence_users:
+        status = entry['status']
+        username = entry['username']
+        should_exclude_by_file = should_exclude_file(entry, settings['left_name'])
+        if should_exclude_by_file:
+            continue
+        domain_found = False
+        for domain in MOZILLA_DOMAINS:
+            if domain in username:
+                domain_found = True
+        if domain_found and status == 'current':
+            if not user_exists_in_ldap_by_mail(ldap_users, username):
+                print("{} not found in LDAP.".format(username))
 
 def compare_access_ldap(settings, args, access_entries, ldap_entries):
     for org in access_entries:

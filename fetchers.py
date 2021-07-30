@@ -1,7 +1,9 @@
 from local_settings import CIS_GRANT_TYPE, CIS_SCOPE, WORKDAY_FULL_SYNC_URL, WORKDAY_USER, WORKDAY_PASS, PROXIES # type: ignore
 from local_settings import LDAP_HOST, LDAP_USER, LDAP_PASSWORD # type: ignore
 from local_settings import CIS_TOKEN_URL, CIS_AUDIENCE, CIS_CLIENT_ID, CIS_SECRET, CIS_BASE_URL
+from local_settings import CONFLUENCE_BASE_URL, CONFLUENCE_USERNAME, CONFLUENCE_PASSWORD
 from local_settings import ACCESS_ORGS, ACCESS_TOKEN
+from constants import MOZILLA_DOMAINS
 import requests
 import json
 # For fetchers we may need to maintain a database of when the data was retrieved
@@ -9,14 +11,9 @@ import json
 # Initially though, live data compare will be ok
 
 def extract_by_mozilla_domains(users):
-    mozilla_domains = [
-        'mozilla.com',
-        'mozillafoundation.org',
-        'getpocket.com'
-    ]
     return_users = []
     for user in users:
-        for domain in mozilla_domains:
+        for domain in MOZILLA_DOMAINS:
             if domain in user['primary_email']:
                 return_users.append(user)
     emails = set([u['primary_email'] for u in users])
@@ -31,6 +28,21 @@ def filter_access_lists(org_lists, return_attribute, k, v):
         ret[org] = [u[return_attribute] for u in org_lists[org] if u[k] == v]
     return ret
 
+
+
+def confluence(settings):
+    done = False
+    confluence_users = []
+    url = "{}/rest/api/group/everyone/member?expand=status".format(CONFLUENCE_BASE_URL)
+    while not done:
+        resp = requests.get(url, proxies=PROXIES, auth=(CONFLUENCE_USERNAME, CONFLUENCE_PASSWORD))
+        confluence_users += resp.json()['results']
+        try:
+            next = resp.json()['_links']['next']
+            url = "{}{}".format(CONFLUENCE_BASE_URL, next)
+        except KeyError:
+            done = True
+    return confluence_users
 
 def access(settings, billable_only=False, active_only=False):
     headers = {
