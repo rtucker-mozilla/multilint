@@ -1,8 +1,8 @@
 import argparse
 import settings
 from runners import compare_workday_ldap, process_duplicates, compare_access_ldap
-from runners import compare_confluence_ldap
-from fetchers import cis, confluence, ldap, access, workday
+from runners import compare_confluence_ldap, compare_ldap_dynamodb
+from fetchers import cis, confluence, ldap, access, workday, dynamodb
 
 
 
@@ -11,11 +11,13 @@ def main():
     parser.add_argument('--access-ldap', help='', action='store_true')
     parser.add_argument('--workday-ldap', help='', action='store_true')
     parser.add_argument('--confluence-ldap', help='', action='store_true')
+    parser.add_argument('--ldap-dynamodb', help='', action='store_true')
     args = parser.parse_args()
     workday_users = None
     ldap_users = None
     access_users = None
     confluence_users = None
+    dynamodb_users = None
 
     if args.access_ldap:
         if ldap_users is None:
@@ -38,6 +40,13 @@ def main():
             confluence_users = confluence(settings)
         compare_confluence_ldap(settings.confluence_ldap, args, confluence_users, ldap_users)
     
+    if args.ldap_dynamodb:
+        if dynamodb_users is None:
+            dynamodb_users = dynamodb(settings)
+        if ldap_users is None:
+            ldap_users = ldap(settings)
+        compare_ldap_dynamodb(settings.ldap_dynamodb, args, ldap_users, dynamodb_users)
+
     #cis(settings, '')
     #process_duplicates(settings.workday)
     # Probably not necessary since we've added an overlap to stop dupes

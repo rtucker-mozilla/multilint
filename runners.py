@@ -43,7 +43,7 @@ def execute_compare(left_entries, right_entries, settings, args):
             leftUID = left_entry[settings['leftUID']].encode('utf8')
             should_exclude_by_regex = should_exclude_regex(leftUID, settings)
             should_exclude_by_file = should_exclude_file(leftUID, settings['left_name'])
-            if should_exclude_by_regex or should_exclude_file:
+            if should_exclude_by_regex or should_exclude_by_file:
                 continue
 
             try:
@@ -102,6 +102,31 @@ def user_exists_in_ldap_by_mail(ldap_users, mail):
     except (IndexError, KeyError):
         return False
 
+def is_mozilla_email(email):
+    for domain in MOZILLA_DOMAINS:
+        if domain in email:
+            return True
+    return False
+
+def extract_mozilla_dynamodb_emails_only(dynamodb_users):
+    emails_only = [u['primary_email'] for u in dynamodb_users]
+    mozilla_emails = []
+    for username in emails_only:
+        if is_mozilla_email(username):
+            mozilla_emails.append(username)
+    return mozilla_emails
+
+def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
+    mozilla_only_dynamodb_users = extract_mozilla_dynamodb_emails_only(dynamodb_users)
+    for entry in ldap_users:
+        username = entry['mail']
+        should_exclude_by_file = should_exclude_file(username, settings['left_name'])
+        should_exclude_by_regex = should_exclude_regex(username, settings)
+        if should_exclude_by_file or should_exclude_by_regex:
+            continue
+        if not username in mozilla_only_dynamodb_users:
+            print("{} not found in DynamoDB.".format(username))
+
 def compare_confluence_ldap(settings, args, confluence_users, ldap_users):
     for entry in confluence_users:
         status = entry['status']
@@ -109,10 +134,7 @@ def compare_confluence_ldap(settings, args, confluence_users, ldap_users):
         should_exclude_by_file = should_exclude_file(username, settings['left_name'])
         if should_exclude_by_file:
             continue
-        domain_found = False
-        for domain in MOZILLA_DOMAINS:
-            if domain in username:
-                domain_found = True
+        domain_found = is_mozilla_email(username)
         if domain_found and status == 'current':
             if not user_exists_in_ldap_by_mail(ldap_users, username):
                 print("{} not found in LDAP.".format(username))

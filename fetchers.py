@@ -3,9 +3,12 @@ from local_settings import LDAP_HOST, LDAP_USER, LDAP_PASSWORD # type: ignore
 from local_settings import CIS_TOKEN_URL, CIS_AUDIENCE, CIS_CLIENT_ID, CIS_SECRET, CIS_BASE_URL
 from local_settings import CONFLUENCE_BASE_URL, CONFLUENCE_USERNAME, CONFLUENCE_PASSWORD
 from local_settings import ACCESS_ORGS, ACCESS_TOKEN
+from local_settings import DYNAMODB_PROFILE_NAME, DYNAMODB_TABLE_NAME, DYNAMODB_REGION_NAME, DYNAMODB_SCAN_ARGS, DYNAMODB_CACHEFILE_NAME 
 from constants import MOZILLA_DOMAINS
 import requests
 import json
+import boto3
+
 # For fetchers we may need to maintain a database of when the data was retrieved
 # Due to different timeframes of data sync, we won't always want to compare the most recent
 # Initially though, live data compare will be ok
@@ -29,6 +32,38 @@ def filter_access_lists(org_lists, return_attribute, k, v):
     return ret
 
 
+def dynamodb(table, from_cache=False):
+    if from_cache:
+        try:
+            fh = open(DYNAMODB_CACHEFILE_NAME, 'rb')
+            b_data = fh.read()
+            r_data = json.loads(b_data)
+            fh.close()
+            return r_data
+        except TypeError:
+            return []
+    ret = []
+    done = False
+    start_key = None
+    scan_kwargs = {
+        'ProjectionExpression': DYNAMODB_SCAN_ARGS
+    }
+    table_name = DYNAMODB_TABLE_NAME
+    session = boto3.Session(profile_name=DYNAMODB_PROFILE_NAME, region_name=DYNAMODB_REGION_NAME)
+    table = session.resource('dynamodb').Table(table_name)
+    while not done:
+        if start_key:
+            scan_kwargs['ExclusiveStartKey'] = start_key
+        response = table.scan(**scan_kwargs)
+        if response['Count'] > 0:
+            for item in response.get('Items'):
+                ret.append(item)
+        start_key = response.get('LastEvaluatedKey', None)
+        done = start_key is None
+    fh = open(DYNAMODB_CACHEFILE_NAME , "wb")
+    fh.write(json.dumps(ret).encode("utf8"))
+    fh.close()
+    return ret
 
 def confluence(settings):
     done = False
