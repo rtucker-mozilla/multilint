@@ -28,6 +28,11 @@ def should_exclude_regex(uid, settings):
     # ]
     # }
     for r in settings['exclude_regex']:
+        try:
+            uid = uid.decode()
+        except TypeError:
+            pass
+
         if re.match(r, uid):
             return True
     return False
@@ -74,9 +79,9 @@ def execute_compare(left_entries, right_entries, settings, args):
         # We've already done all of the attribute comparisons, now we just
         # need to make sure nothing is in the right that isn't in the left
         # We're basically going to flip Right -> Left
-        for ldap_entry in right_entries:
-            left_entry = ldap_entry
-            leftUID = ldap_entry[settings['rightUID']].decode()
+        for right_entry in right_entries:
+            left_entry = right_entry
+            leftUID = right_entry[settings['rightUID']].decode()
             # Utilize ability to exclude
             should_exclude_by_regex = should_exclude_regex(leftUID, settings)
             should_exclude_by_file = should_exclude_file(leftUID, settings['right_name'])
