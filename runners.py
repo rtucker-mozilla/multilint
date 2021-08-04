@@ -30,7 +30,7 @@ def should_exclude_regex(uid, settings):
     for r in settings['exclude_regex']:
         try:
             uid = uid.decode()
-        except TypeError:
+        except (AttributeError, TypeError):
             pass
 
         if re.match(r, uid):
