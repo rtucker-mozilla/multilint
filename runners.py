@@ -132,7 +132,7 @@ def should_exclude_attribute_value(entry, settings):
     for exclusion in exclusions:
         name = exclusion['name']
         value = exclusion['value']
-        if entry[name] == exclusion[value]:
+        if entry[name] == value:
             return True
     # Default return False if no matches
     return False
