@@ -150,6 +150,7 @@ def ldap(settings):
         'mail',
         'employeeNumber',
         'workdayCostCenter',
+        'employeeType'
     ]
     ldap_conn = ldaplib.initialize(LDAP_HOST) # pragma: no cover
     ldap_conn.start_tls_s()
