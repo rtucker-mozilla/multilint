@@ -133,9 +133,9 @@ def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
         should_exclude_by_regex = should_exclude_regex(username, settings)
         # Exclude contractors from linting against dynamodb.
         # Should rework this into a function and settings
-        if entry['employeeType'] == [b'CC']:
+        if entry['employeeType'] == b'CC':
             continue
-        if entry['employeeType'] == [b'FC']:
+        if entry['employeeType'] == b'FC':
             continue
         if should_exclude_by_file or should_exclude_by_regex:
             continue
