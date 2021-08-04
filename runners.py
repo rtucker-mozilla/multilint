@@ -121,6 +121,23 @@ def extract_mozilla_dynamodb_emails_only(dynamodb_users):
             mozilla_emails.append(username)
     return mozilla_emails
 
+def should_exclude_attribute_value(entry, settings):
+    # Get exclusions from settings
+    # Return False if there are none
+    try:
+        exclusions = settings['exclude_attribute_value']
+    except:
+        return False
+
+    for exclusion in exclusions:
+        name = exclusion['name']
+        value = exclusion['value']
+        if entry[name] == exclusion[value]:
+            return True
+    # Default return False if no matches
+    return False
+
+
 def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
     mozilla_only_dynamodb_users = extract_mozilla_dynamodb_emails_only(dynamodb_users)
     for entry in ldap_users:
@@ -131,13 +148,9 @@ def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
             pass
         should_exclude_by_file = should_exclude_file(username, settings['left_name'])
         should_exclude_by_regex = should_exclude_regex(username, settings)
-        # Exclude contractors from linting against dynamodb.
-        # Should rework this into a function and settings
-        if entry['employeeType'] == b'CC':
-            continue
-        if entry['employeeType'] == b'FC':
-            continue
-        if should_exclude_by_file or should_exclude_by_regex:
+        should_exclude_by_attribute_value = should_exclude_attribute_value(entry, settings)
+
+        if should_exclude_by_file or should_exclude_by_regex or should_exclude_by_attribute_value:
             continue
         if not username in mozilla_only_dynamodb_users:
             print("{} not found in DynamoDB.".format(username))
