@@ -11,7 +11,7 @@ def main():
     parser.add_argument('--access-ldap', help='', action='store_true')
     parser.add_argument('--workday-ldap', help='', action='store_true')
     parser.add_argument('--confluence-ldap', help='', action='store_true')
-    parser.add_argument('--ldap-dynamodb', help='', action='store_true')
+    parser.add_argument('--dynamodb-ldap', help='', action='store_true')
     args = parser.parse_args()
     workday_users = None
     ldap_users = None
@@ -40,7 +40,7 @@ def main():
             confluence_users = confluence(settings)
         compare_confluence_ldap(settings.confluence_ldap, args, confluence_users, ldap_users)
     
-    if args.ldap_dynamodb:
+    if args.dynamodb_ldap:
         if dynamodb_users is None:
             dynamodb_users = dynamodb(settings)
         if ldap_users is None:
