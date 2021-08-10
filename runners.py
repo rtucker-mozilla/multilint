@@ -8,11 +8,11 @@ def should_exclude_by_create_date(create_date_obj, delta_days, today_date=None):
     if not today_date:
         today_date = datetime.today()
     try:
-        day_delta = create_date_obj - today_date
+        day_delta = today_date - create_date_obj
     except TypeError:
         return False
 
-    return day_delta.days >= delta_days
+    return day_delta.days <= delta_days
     
 
     
