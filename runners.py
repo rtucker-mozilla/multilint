@@ -177,7 +177,7 @@ def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
         should_exclude_by_file = should_exclude_file(username, settings['left_name'])
         should_exclude_by_regex = should_exclude_regex(username, settings)
         create_date = parse_ldap_date(entry['createTimestamp'])
-        exclude_by_date = should_exclude_by_create_date(create_date, LDAP_MINIMUM_ACCOUNT_AGE):
+        exclude_by_date = should_exclude_by_create_date(create_date, LDAP_MINIMUM_ACCOUNT_AGE)
 
         if exclude_by_date:
             continue
