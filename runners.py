@@ -178,6 +178,7 @@ def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
         should_exclude_by_regex = should_exclude_regex(username, settings)
         create_date = parse_ldap_date(entry['createTimestamp'])
         exclude_by_date = should_exclude_by_create_date(create_date, LDAP_MINIMUM_ACCOUNT_AGE)
+        exclude_attribute_value = should_exclude_attribute_value(entry, settings)
 
         if exclude_by_date:
             continue
@@ -186,6 +187,9 @@ def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
             continue
 
         if should_exclude_by_regex:
+            continue
+
+        if exclude_attribute_value:
             continue
 
         if not username in mozilla_only_dynamodb_users:
