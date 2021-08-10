@@ -6,7 +6,7 @@ LDAP_MINIMUM_ACCOUNT_AGE = 7
 
 try:
     from settings import LDAP_MINIMUM_ACCOUNT_AGE
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     pass
 try:
     from local_settings import LDAP_MINIMUM_ACCOUNT_AGE
