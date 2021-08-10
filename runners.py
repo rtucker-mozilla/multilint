@@ -2,10 +2,17 @@ import re
 import os
 from datetime import datetime
 from constants import MOZILLA_DOMAINS
+LDAP_MINIMUM_ACCOUNT_AGE = 7
+
+try:
+    from settings import LDAP_MINIMUM_ACCOUNT_AGE
+except ModuleNotFoundError:
+    pass
 try:
     from local_settings import LDAP_MINIMUM_ACCOUNT_AGE
 except (ImportError):
-    from settings import LDAP_MINIMUM_ACCOUNT_AGE
+    pass
+
 
 
 def should_exclude_by_create_date(create_date_obj, delta_days, today_date=None):
