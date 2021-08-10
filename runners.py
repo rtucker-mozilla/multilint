@@ -1,6 +1,34 @@
 import re
 import os
+from datetime import datetime
 from constants import MOZILLA_DOMAINS
+from local_settings import LDAP_MINIMUM_ACCOUNT_AGE
+
+def should_exclude_by_create_date(create_date_obj, delta_days, today_date=None):
+    if not today_date:
+        today_date = datetime.today()
+    try:
+        day_delta = create_date_obj - today_date
+    except TypeError:
+        return False
+
+    return day_delta.days >= delta_days
+    
+
+    
+def parse_ldap_date(input_date_string):
+    try:
+        input_date_string = input_date_string.decode()
+    except (TypeError, AttributeError):
+        pass
+
+    try:
+        date_obj = datetime.strptime(input_date_string, "%Y%m%d%H%M%SZ")
+    except (AttributeError, ValueError) as e:
+        date_obj = None
+    return date_obj
+
+
 
 def should_exclude_file(uid, name):
     # Taking a uid and name that corresponds to a simple text file
@@ -148,10 +176,18 @@ def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
             pass
         should_exclude_by_file = should_exclude_file(username, settings['left_name'])
         should_exclude_by_regex = should_exclude_regex(username, settings)
-        should_exclude_by_attribute_value = should_exclude_attribute_value(entry, settings)
+        create_date = parse_ldap_date(entry['createTimestamp'])
+        exclude_by_date = should_exclude_by_create_date(create_date, LDAP_MINIMUM_ACCOUNT_AGE):
 
-        if should_exclude_by_file or should_exclude_by_regex or should_exclude_by_attribute_value:
+        if exclude_by_date:
             continue
+
+        if should_exclude_by_file:
+            continue
+
+        if should_exclude_by_regex:
+            continue
+
         if not username in mozilla_only_dynamodb_users:
             print("{} not found in DynamoDB.".format(username))
 
