@@ -1,6 +1,7 @@
 import re
 import os
 from datetime import datetime
+import dateutil
 from constants import MOZILLA_DOMAINS
 LDAP_MINIMUM_ACCOUNT_AGE = 7
 
@@ -184,8 +185,13 @@ def compare_ldap_auth0(settings, args, ldap_users, auth0_users):
             last_login = entry['last_login']
         except:
             last_login = ''
+        delta_days = 0
         should_exclude_by_file = should_exclude_file(username, settings['left_name'])
         should_exclude_by_regex = should_exclude_regex(username, settings)
+        if last_login:
+            last_login_obj = dateutil.parser.parse(last_login)
+            days_since_login = datetime.today() - last_login_obj
+            delta_days = days_since_login.days
 
         if should_exclude_by_file:
             continue
@@ -194,7 +200,7 @@ def compare_ldap_auth0(settings, args, ldap_users, auth0_users):
             continue
 
         if not user_exists_in_ldap_by_mail(ldap_users, username):
-            print("Auth0: {} not found in LDAP. Last Login: {}".format(username, last_login))
+            print("Auth0: {} not found in LDAP. Days Since Login: {}".format(username, delta_days))
 
 def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
     mozilla_only_dynamodb_users = extract_mozilla_dynamodb_emails_only(dynamodb_users)
