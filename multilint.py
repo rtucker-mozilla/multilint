@@ -52,7 +52,6 @@ def main():
     if args.auth0_ldap:
         if auth0_users is None:
             auth0_users = run_auth0(settings)
-            import pdb; pdb.set_trace()
         if ldap_users is None:
             ldap_users = ldap(settings)
         compare_ldap_auth0(settings.ldap_auth0, args, ldap_users, auth0_users)
