@@ -177,6 +177,21 @@ def should_exclude_attribute_value(entry, settings):
     return False
 
 
+def compare_ldap_auth0(settings, args, ldap_users, auth0_users):
+    for entry in auth0_users:
+        username = entry['email']
+        should_exclude_by_file = should_exclude_file(username, settings['left_name'])
+        should_exclude_by_regex = should_exclude_regex(username, settings)
+
+        if should_exclude_by_file:
+            continue
+
+        if should_exclude_by_regex:
+            continue
+
+        if not user_exists_in_ldap_by_mail(ldap_users, username):
+            print("Auth0: {} not found in LDAP.".format(username))
+
 def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
     mozilla_only_dynamodb_users = extract_mozilla_dynamodb_emails_only(dynamodb_users)
     for entry in ldap_users:

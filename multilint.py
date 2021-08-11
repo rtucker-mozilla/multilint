@@ -1,8 +1,8 @@
 import argparse
 import settings
 from runners import compare_workday_ldap, process_duplicates, compare_access_ldap
-from runners import compare_confluence_ldap, compare_ldap_dynamodb
-from fetchers import cis, confluence, ldap, access, workday, dynamodb
+from runners import compare_confluence_ldap, compare_ldap_dynamodb, compare_ldap_auth0
+from fetchers import cis, confluence, ldap, access, workday, dynamodb, run_auth0
 
 
 
@@ -12,12 +12,14 @@ def main():
     parser.add_argument('--workday-ldap', help='', action='store_true')
     parser.add_argument('--confluence-ldap', help='', action='store_true')
     parser.add_argument('--dynamodb-ldap', help='', action='store_true')
+    parser.add_argument('--auth0-ldap', help='', action='store_true')
     args = parser.parse_args()
     workday_users = None
     ldap_users = None
     access_users = None
     confluence_users = None
     dynamodb_users = None
+    auth0_users = None
 
     if args.access_ldap:
         if ldap_users is None:
@@ -46,6 +48,14 @@ def main():
         if ldap_users is None:
             ldap_users = ldap(settings)
         compare_ldap_dynamodb(settings.ldap_dynamodb, args, ldap_users, dynamodb_users)
+
+    if args.auth0_ldap:
+        if auth0_users is None:
+            auth0_users = run_auth0(settings)
+            import pdb; pdb.set_trace()
+        if ldap_users is None:
+            ldap_users = ldap(settings)
+        compare_ldap_auth0(settings.ldap_auth0, args, ldap_users, auth0_users)
 
     #cis(settings, '')
     #process_duplicates(settings.workday)

@@ -4,7 +4,10 @@ from local_settings import CIS_TOKEN_URL, CIS_AUDIENCE, CIS_CLIENT_ID, CIS_SECRE
 from local_settings import CONFLUENCE_BASE_URL, CONFLUENCE_USERNAME, CONFLUENCE_PASSWORD
 from local_settings import ACCESS_ORGS, ACCESS_TOKEN
 from local_settings import DYNAMODB_PROFILE_NAME, DYNAMODB_TABLE_NAME, DYNAMODB_REGION_NAME, DYNAMODB_SCAN_ARGS, DYNAMODB_CACHEFILE_NAME 
+from local_settings import AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN
 from constants import MOZILLA_DOMAINS
+from auth0.v3.authentication import GetToken
+from auth0.v3.management import Auth0
 import requests
 import json
 import boto3
@@ -31,6 +34,35 @@ def filter_access_lists(org_lists, return_attribute, k, v):
         ret[org] = [u[return_attribute] for u in org_lists[org] if u[k] == v]
     return ret
 
+def run_auth0(settings):
+    users = []
+    for domain in MOZILLA_DOMAINS:
+        domain_users = query_auth0(domain)
+        users += domain_users
+    return users
+    
+
+def query_auth0(search_domain):
+    page = 0
+    seen_count = 0
+    per_page = 50
+    total = 1
+    users = []
+    domain = AUTH0_DOMAIN
+    non_interactive_client_id = AUTH0_CLIENT_ID
+    non_interactive_client_secret = AUTH0_CLIENT_SECRET
+    get_token = GetToken(domain)
+    token = get_token.client_credentials(non_interactive_client_id,
+        non_interactive_client_secret, 'https://{}/api/v2/'.format(domain))
+    mgmt_api_token = token['access_token']
+    auth0 = Auth0(domain, mgmt_api_token)
+    while seen_count < total:
+        resp = auth0.users.list(q='email.domain={}'.format(search_domain), page=page, per_page=50)
+        total = int(resp['total'])
+        users += resp['users']
+        seen_count = len(users)
+        page += 1
+    return users
 
 def dynamodb(table, from_cache=False):
     if from_cache:
