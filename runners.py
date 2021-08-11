@@ -194,7 +194,7 @@ def compare_ldap_auth0(settings, args, ldap_users, auth0_users):
             continue
 
         if not user_exists_in_ldap_by_mail(ldap_users, username):
-            print("Auth0: {} not found in LDAP. Last Login: {}".format(username, last_login]))
+            print("Auth0: {} not found in LDAP. Last Login: {}".format(username, last_login))
 
 def compare_ldap_dynamodb(settings, args, ldap_users, dynamodb_users):
     mozilla_only_dynamodb_users = extract_mozilla_dynamodb_emails_only(dynamodb_users)
