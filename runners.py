@@ -190,7 +190,7 @@ def compare_ldap_auth0(settings, args, ldap_users, auth0_users):
         should_exclude_by_regex = should_exclude_regex(username, settings)
         if last_login:
             last_login_obj = dateutil.parser.parse(last_login)
-            last_login_obj = datetime.replace(tzinfo=None)
+            last_login_obj = last_login_obj.replace(tzinfo=None)
             days_since_login = datetime.today() - last_login_obj
             delta_days = days_since_login.days
 
