@@ -178,9 +178,18 @@ def should_exclude_attribute_value(entry, settings):
     return False
 
 
-def compare_ldap_auth0(settings, args, ldap_users, auth0_users):
+def compare_ldap_auth0(settings, args, ldap_users, auth0_users, filter_blocked=True):
     for entry in auth0_users:
         username = entry['email']
+        # We only care about
+        try:
+            blocked = entry['blocked']
+        except:
+            blocked = False
+
+        if filter_blocked and blocked:
+            continue
+
         try:
             last_login = entry['last_login']
         except:
